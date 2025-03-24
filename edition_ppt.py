@@ -84,7 +84,7 @@ placeholders_missions = {
 }
 
 placeholders_word = {
-    "client": "client", "date": "date", "adresse": "adresse",
+    "nom": "nom", "date": "date", "adresse": "adresse",
     "cp": "cp", "ville": "ville", "assureur": "assureur", "camionette": "camionette",
     "camion": "camion", "deuxroues": "deuxroues", "engins": "engins", "autre": "autre",
     "effet": "effet", "siret": "siret", "activite": "activite", "risque": "risque"
@@ -105,15 +105,20 @@ if excel_file is not None:
     df = pd.read_excel(excel_file, sheet_name=selected_sheet)
 
     # Afficher les données de la feuille sélectionnée
-    st.write(f"Données de l'onglet {selected_sheet}:")
+    st.write(f"Données de l'onglet '{selected_sheet}':")
     st.dataframe(df)
 
     # Sélection du client par l'utilisateur
     clients = df['client'].unique()
     client_selection = st.selectbox("Choisissez un client", clients)
 
+    # Cases à cocher pour sélectionner les modes
+    mode_flotte = st.checkbox("Mode Flotte")
+    mode_mission = st.checkbox("Mode Mission")
+    mode_word = st.checkbox("Mode Word")
+
     # Bouton pour générer les présentations "Flottes"
-    if st.button("Générer PowerPoint Flottes"):
+    if mode_flotte and st.button("Générer PowerPoint Flottes"):
         ppt_files = generate_ppt(chemin_template_flottes, excel_file, selected_sheet, client_selection, placeholders_flottes)
         for filename, ppt_io in ppt_files:
             st.download_button(
@@ -125,7 +130,7 @@ if excel_file is not None:
         st.balloons()  # Affiche une animation de ballons après la génération des présentations
 
     # Bouton pour générer les présentations "Missions"
-    if st.button("Générer PowerPoint Mission"):
+    if mode_mission and st.button("Générer PowerPoint Mission"):
         ppt_files = generate_ppt(chemin_template_mission, excel_file, selected_sheet, client_selection, placeholders_missions)
         for filename, ppt_io in ppt_files:
             st.download_button(
@@ -137,7 +142,7 @@ if excel_file is not None:
         st.balloons()  # Affiche une animation de ballons après la génération des présentations
 
     # Bouton pour générer le document Word
-    if st.button("Générer Word"):
+    if mode_word and st.button("Générer Word"):
         word_file = remplir_document_word(chemin_template_word, excel_file, selected_sheet, client_selection, placeholders_word)
         st.download_button(
             label="📥 Télécharger le document Word",
