@@ -3,6 +3,15 @@ import pandas as pd
 from pptx import Presentation
 from io import BytesIO
 
+
+st.set_page_config(
+    page_title="Générateur de PowerPoint",
+    layout="wide",
+    menu_items={
+        'About': "# C'est une application pour la génération automatique de PPT."
+    }
+)
+
 def generate_ppt(template_path, excel_file, client_selection, placeholders):
     """ Génère des présentations PowerPoint basées sur le modèle et les données """
     data = pd.read_excel(excel_file)
