@@ -84,7 +84,7 @@ placeholders_missions = {
 }
 
 placeholders_word = {
-    "nom": "nom", "date": "date", "adresse": "adresse",
+    "client": "client", "date": "date", "adresse": "adresse",
     "cp": "cp", "ville": "ville", "assureur": "assureur", "camionette": "camionette",
     "camion": "camion", "deuxroues": "deuxroues", "engins": "engins", "autre": "autre",
     "effet": "effet", "siret": "siret", "activite": "activite", "risque": "risque"
@@ -105,7 +105,7 @@ if excel_file is not None:
     df = pd.read_excel(excel_file, sheet_name=selected_sheet)
 
     # Afficher les données de la feuille sélectionnée
-    st.write(f"Données de l'onglet '{selected_sheet}':")
+    st.write(f"Données de l'onglet {selected_sheet}:")
     st.dataframe(df)
 
     # Sélection du client par l'utilisateur
