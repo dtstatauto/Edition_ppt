@@ -3,15 +3,14 @@ import pandas as pd
 from pptx import Presentation
 from io import BytesIO
 
-
 st.set_page_config(page_title="Générateur de PowerPoint")
 
-# Logo Aon
-st.logo("templates/logo-aon.jpg", size="large")
+# Affichage du logo
+st.image("templates/logo-aon.jpg", width=150)
 
-def generate_ppt(template_path, excel_file, client_selection, placeholders):
+def generate_ppt(template_path, excel_file, sheet_name, client_selection, placeholders):
     """ Génère des présentations PowerPoint basées sur le modèle et les données """
-    data = pd.read_excel(excel_file)
+    data = pd.read_excel(excel_file, sheet_name=sheet_name)
     filtered_data = data[data['client'] == client_selection]
 
     ppt_files = []
@@ -56,19 +55,31 @@ placeholders_missions = {
     "frac": "frac", "fin": "fin"
 }
 
-# Téléchargement du fichier Excel par l'utilisateur
-excel_file = st.file_uploader("Choisissez le fichier excel contenant les informations à éditer", type=["xlsx"])
+# Téléchargement du fichier Excel
+excel_file = st.file_uploader("Choisissez le fichier Excel", type=["xlsx", "xls"])
 
 if excel_file is not None:
-    data = pd.read_excel(excel_file)
-    clients = data['client'].unique()
+    # Lire les noms des feuilles du fichier Excel
+    xls = pd.ExcelFile(excel_file)
+    sheet_names = xls.sheet_names
+
+    # Sélection de la feuille par l'utilisateur
+    selected_sheet = st.selectbox("Choisissez l'onglet à traiter", sheet_names)
+
+    # Lire les données de la feuille sélectionnée
+    df = pd.read_excel(excel_file, sheet_name=selected_sheet)
+
+    # Afficher les données de la feuille sélectionnée
+    st.write(f"Données de l'onglet '{selected_sheet}':")
+    st.dataframe(df)
 
     # Sélection du client par l'utilisateur
+    clients = df['client'].unique()
     client_selection = st.selectbox("Choisissez un client", clients)
 
     # Bouton pour générer les présentations "Flottes"
     if st.button("Générer PowerPoint Flottes"):
-        ppt_files = generate_ppt(chemin_template_flottes, excel_file, client_selection, placeholders_flottes)
+        ppt_files = generate_ppt(chemin_template_flottes, excel_file, selected_sheet, client_selection, placeholders_flottes)
         for filename, ppt_io in ppt_files:
             st.download_button(
                 label=f"📥 Télécharger {filename}",
@@ -80,7 +91,7 @@ if excel_file is not None:
 
     # Bouton pour générer les présentations "Missions"
     if st.button("Générer PowerPoint Mission"):
-        ppt_files = generate_ppt(chemin_template_mission, excel_file, client_selection, placeholders_missions)
+        ppt_files = generate_ppt(chemin_template_mission, excel_file, selected_sheet, client_selection, placeholders_missions)
         for filename, ppt_io in ppt_files:
             st.download_button(
                 label=f"📥 Télécharger {filename}",
