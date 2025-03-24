@@ -101,3 +101,8 @@ if excel_file is not None:
         st.balloons()  # Affiche une animation de ballons après la génération du document Word
 else:
     st.warning("Veuillez télécharger un fichier Excel.")
+
+
+# Bas de page 
+st.write("---")
+st.write("Application développée par l'équipe statistique (B.F)")
