@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pptx import Presentation
+from docx import Document
 from io import BytesIO
 
 st.set_page_config(page_title="Générateur de PowerPoint")
@@ -33,12 +34,39 @@ def generate_ppt(template_path, excel_file, sheet_name, client_selection, placeh
 
     return ppt_files
 
+def remplir_document_word(template_path, excel_file, sheet_name, client_selection, placeholders):
+    # Lire les données Excel
+    data = pd.read_excel(excel_file, sheet_name=sheet_name)
+    filtered_data = data[data['client'] == client_selection]
+
+    # Ouvrir le modèle Word
+    doc = Document(template_path)
+
+    # Parcourir les lignes du fichier Excel
+    for index, row in filtered_data.iterrows():
+        # Ajouter un saut de page pour chaque entrée
+        doc.add_page_break()
+
+        # Remplacer les espaces réservés dans le document Word
+        for paragraph in doc.paragraphs:
+            for key, value in placeholders.items():
+                if f"{{{key}}}" in paragraph.text:
+                    paragraph.text = paragraph.text.replace(f"{{{key}}}", str(row[key]))
+
+    # Créer un objet BytesIO pour enregistrer le document
+    doc_io = BytesIO()
+    doc.save(doc_io)
+    doc_io.seek(0)  # Rembobiner au début du flux
+
+    return doc_io
+
 # Interface utilisateur Streamlit
 st.title("Générateur de PowerPoint")
 
-# Chemins vers les modèles PowerPoint
+# Chemins vers les modèles PowerPoint et Word
 chemin_template_flottes = "templates/ppt_flottes.pptx"
 chemin_template_mission = "templates/ppt_missions.pptx"
+chemin_template_word = "templates/word.docx"
 
 # Dictionnaires des espaces réservés pour les contrats "flottes" et "missions"
 placeholders_flottes = {
@@ -53,6 +81,13 @@ placeholders_missions = {
     "client": "client", "date": "date", "nom": "nom", "adresse": "adresse",
     "cp": "cp", "ville": "ville", "assureur": "ass", "echeann": "echeann",
     "frac": "frac", "fin": "fin"
+}
+
+placeholders_word = {
+    "nom": "nom", "date": "date", "adresse": "adresse",
+    "cp": "cp", "ville": "ville", "assureur": "assureur", "camionette": "camionette",
+    "camion": "camion", "deuxroues": "deuxroues", "engins": "engins", "autre": "autre",
+    "effet": "effet", "siret": "siret", "activite": "activite", "risque": "risque"
 }
 
 # Téléchargement du fichier Excel
@@ -100,5 +135,16 @@ if excel_file is not None:
                 mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
             )
         st.balloons()  # Affiche une animation de ballons après la génération des présentations
+
+    # Bouton pour générer le document Word
+    if st.button("Générer Word"):
+        word_file = remplir_document_word(chemin_template_word, excel_file, selected_sheet, client_selection, placeholders_word)
+        st.download_button(
+            label="📥 Télécharger le document Word",
+            data=word_file,
+            file_name="document_rempli.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        st.balloons()  # Affiche une animation de ballons après la génération du document Word
 else:
     st.warning("Veuillez télécharger un fichier Excel.")
