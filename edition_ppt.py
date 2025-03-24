@@ -3,11 +3,10 @@ import pandas as pd
 from pptx import Presentation
 from io import BytesIO
 
-def edition_ppt(template_path, excel_file, client_selection):
-    """ Remplit le PowerPoint modèle avec les données de chaque ligne du fichier Excel. """
-
+def generate_ppt(template_path, excel_file, client_selection, placeholders):
+    """ Génère des présentations PowerPoint basées sur le modèle et les données """
     data = pd.read_excel(excel_file)
-    filtered_data = data[(data['client'] == client_selection)]
+    filtered_data = data[data['client'] == client_selection]
 
     ppt_files = []
 
@@ -19,27 +18,9 @@ def edition_ppt(template_path, excel_file, client_selection):
                 if shape.has_text_frame:
                     for paragraph in shape.text_frame.paragraphs:
                         for run in paragraph.runs:
-                            run.text = run.text.replace("client", str(row["client"]))
-                            run.text = run.text.replace("date", str(row["date"]))
-                            run.text = run.text.replace("nom", str(row["nom"]))
-                            run.text = run.text.replace("adresse", str(row["adresse"]))
-                            run.text = run.text.replace("cp", str(row["cp"]))
-                            run.text = run.text.replace("ville", str(row["ville"]))
-                            run.text = run.text.replace("leger", str(row["leger"]))
-                            run.text = run.text.replace("lourd", str(row["lourd"]))
-                            run.text = run.text.replace("semirem", str(row["semirem"]))
-                            run.text = run.text.replace("reminf", str(row["reminf"]))
-                            run.text = run.text.replace("deuxroues", str(row["droue"]))
-                            run.text = run.text.replace("engins", str(row["engins"]))
-                            run.text = run.text.replace("assureur", str(row["ass"]))
-                            run.text = run.text.replace("echeann", str(row["echeann"]))
-                            run.text = run.text.replace("frac", str(row["frac"]))
-                            run.text = run.text.replace("reg", str(row["reg"]))
-                            run.text = run.text.replace("fin", str(row["fin"]))
-                            
-                            
-                            
-                            
+                            for placeholder, column in placeholders.items():
+                                run.text = run.text.replace(placeholder, str(row[column]))
+
         ppt_io = BytesIO()
         prs.save(ppt_io)
         ppt_io.seek(0)
@@ -50,28 +31,57 @@ def edition_ppt(template_path, excel_file, client_selection):
 # Interface utilisateur Streamlit
 st.title("Générateur de PowerPoint")
 
-# Chemin vers le modèle PowerPoint
-chemin_template = "templates/ppt_flottes.pptx"
+# Chemins vers les modèles PowerPoint
+chemin_template_flottes = "templates/ppt_flottes.pptx"
+chemin_template_mission = "templates/ppt_missions.pptx"
 
+# Dictionnaires des espaces réservés pour les contrats "flottes" et "missions"
+placeholders_flottes = {
+    "client": "client", "date": "date", "nom": "nom", "adresse": "adresse",
+    "cp": "cp", "ville": "ville", "leger": "leger", "lourd": "lourd",
+    "semirem": "semirem", "reminf": "reminf", "deuxroues": "droue",
+    "engins": "engins", "assureur": "ass", "echeann": "echeann",
+    "frac": "frac", "reg": "reg", "fin": "fin"
+}
 
-# Téléchargement du fichier Excel
-excel_file = st.file_uploader("Choisissez un fichier Excel", type=["xlsx"])
+placeholders_missions = {
+    "client": "client", "date": "date", "nom": "nom", "adresse": "adresse",
+    "cp": "cp", "ville": "ville", "assureur": "ass", "echeann": "echeann",
+    "frac": "frac", "fin": "fin"
+}
+
+# Téléchargement du fichier Excel par l'utilisateur
+excel_file = st.file_uploader("Choisissez le fichier excel contenant les informations à éditer", type=["xlsx"])
 
 if excel_file is not None:
     data = pd.read_excel(excel_file)
     clients = data['client'].unique()
 
-    # Sélection du client et du type de risque
+    # Sélection du client par l'utilisateur
     client_selection = st.selectbox("Choisissez un client", clients)
 
-    if st.button("Générer PowerPoint"):
-        ppt_files = edition_ppt(chemin_template, excel_file, client_selection)
+    # Bouton pour générer les présentations "Flottes"
+    if st.button("Générer PowerPoint Flottes"):
+        ppt_files = generate_ppt(chemin_template_flottes, excel_file, client_selection, placeholders_flottes)
         for filename, ppt_io in ppt_files:
             st.download_button(
-                label=f"Télécharger {filename}",
+                label=f"📥 Télécharger {filename}",
                 data=ppt_io,
                 file_name=filename,
                 mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
             )
+        st.balloons()  # Affiche une animation de ballons après la génération des présentations
+
+    # Bouton pour générer les présentations "Missions"
+    if st.button("Générer PowerPoint Mission"):
+        ppt_files = generate_ppt(chemin_template_mission, excel_file, client_selection, placeholders_missions)
+        for filename, ppt_io in ppt_files:
+            st.download_button(
+                label=f"📥 Télécharger {filename}",
+                data=ppt_io,
+                file_name=filename,
+                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            )
+        st.balloons()  # Affiche une animation de ballons après la génération des présentations
 else:
     st.warning("Veuillez télécharger un fichier Excel.")
