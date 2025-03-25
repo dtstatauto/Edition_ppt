@@ -61,9 +61,9 @@ if excel_file is not None:
     client_selection = st.selectbox("Choisissez un client", clients)
 
     # Cases à cocher pour sélectionner les modes
-    mode_flotte = st.checkbox("Mode Flotte")
-    mode_mission = st.checkbox("Mode Mission")
-    mode_word = st.checkbox("Mode Word")
+    mode_flotte = st.checkbox("Flotte")
+    mode_mission = st.checkbox("Mission")
+    mode_word = st.checkbox("Document Word")
 
     # Bouton pour générer les présentations "Flottes"
     if mode_flotte and st.button("Générer PowerPoint Flottes"):
