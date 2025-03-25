@@ -5,7 +5,7 @@ from docx import Document
 from io import BytesIO
 import utils 
 
-# Affichage du logo
+# Logo
 st.image("templates/logo-aon.jpg", width=150)
 
 # Interface utilisateur Streamlit
@@ -32,10 +32,10 @@ placeholders_missions = {
 }
 
 placeholders_word = {
-    "nom": "nom", "date": "date", "adresse": "adresse",
-    "cp": "cp", "ville": "ville", "assureur": "assureur", "camionette": "camionette",
+    "client": "client", "date": "date", "adresse": "adresse",
+    "cp": "cp", "ville": "ville", "assureur": "assureur", "camionnette": "camionnette",
     "camion": "camion", "deuxroues": "deuxroues", "engins": "engins", "autre": "autre",
-    "effet": "effet", "siret": "siret", "activite": "activite", "risque": "risque"
+    "effet": "effet", "siret": "siret", "activite": "activite", "risque": "risque", "courtier":"courtier"
 }
 
 # Téléchargement du fichier Excel
