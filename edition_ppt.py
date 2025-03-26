@@ -6,7 +6,7 @@ from io import BytesIO
 import utils 
 
 # Logo
-st.image("templates/logo-aon.jpg", width=150)
+st.image("templates/logo.png", width=150)
 
 # Interface utilisateur Streamlit
 st.title("Générateur automatique de fichiers")
